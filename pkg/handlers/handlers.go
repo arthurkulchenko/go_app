@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"html/template"
+	"log"
 )
+
+var templateCache = make(map[string]*template.Template)
 
 func Home(response http.ResponseWriter, request *http.Request) {
 	renderTemplate(response, "home.page.tmpl")
@@ -15,10 +18,23 @@ func About(response http.ResponseWriter, request *http.Request) {
 }
 
 func renderTemplate(response http.ResponseWriter, templateName string) {
-	parsedTemplate, _ := template.ParseFiles("./templates/" + templateName, "./templates/base_layout.tmpl")
-	error := parsedTemplate.Execute(response, nil)
-	if error != nil {
-		fmt.Println("Error parsing template:", error)
-		return
+	var err error
+	templates := []string { fmt.Sprintf("./templates/%s", templateName), "./templates/base_layout.tmpl", }
+	// check to see if we already hae the template in the cache
+	_, inMap := templateCache[templateName]
+	if inMap {
+		log.Println("using cached template")
+	} else {
+		log.Println("creating template")
+		tmpl, err := template.ParseFiles(templates...)
+
+		if err != nil {
+			log.Println(err)
+		} else {
+			templateCache[templateName] = tmpl
+		}
 	}
+
+	err = templateCache[templateName].Execute(response, nil)
+	if err != nil { log.Println(err) }
 }
