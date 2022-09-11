@@ -19,7 +19,7 @@ func About(response http.ResponseWriter, request *http.Request) {
 
 func renderTemplate(response http.ResponseWriter, templateName string) {
 	// create template cache
-	templateCache, err := createTemplateCache()
+	templateCache, err := CreateTemplateCache()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func renderTemplate(response http.ResponseWriter, templateName string) {
 	}
 }
 
-func createTemplateCache() (map[string]*template.Template, error) {
+func CreateTemplateCache() (map[string]*template.Template, error) {
 	// myCache := make(map[string]*template.Template)
 	myCache := map[string]*template.Template{}
 	// get all files with *.page.tmpl
