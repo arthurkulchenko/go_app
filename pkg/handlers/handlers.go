@@ -15,7 +15,7 @@ func About(response http.ResponseWriter, request *http.Request) {
 }
 
 func renderTemplate(response http.ResponseWriter, templateName string) {
-	parsedTemplate, _ := template.ParseFiles("./templates/" + templateName)
+	parsedTemplate, _ := template.ParseFiles("./templates/" + templateName, "./templates/base_layout.tmpl")
 	error := parsedTemplate.Execute(response, nil)
 	if error != nil {
 		fmt.Println("Error parsing template:", error)
