@@ -17,6 +17,9 @@ func main() {
 		log.Fatal("Cannot create template cache")
 	}
 	app.TemplateCache = templateCache
+
+	handlers.NewTemplate(&app)
+
 	http.HandleFunc("/", handlers.Home)
 	http.HandleFunc("/about", handlers.About)
 

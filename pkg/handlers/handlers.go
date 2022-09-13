@@ -7,6 +7,7 @@ import (
 	"log"
 	"path/filepath"
 	"bytes"
+	"github.com/arthurkulchenko/go_app/pkg/config"
 )
 
 func Home(response http.ResponseWriter, request *http.Request) {
@@ -17,20 +18,35 @@ func About(response http.ResponseWriter, request *http.Request) {
 	renderTemplate(response, "about.page.tmpl")
 }
 
+// var Repo *Repository
+
+// type Repository struct {
+// 	App *config.AppConfig
+// }
+
+
+
+var app *config.AppConfig
+
+func NewTemplate(appPointer *config.AppConfig) {
+	app = appPointer
+}
+
 func renderTemplate(response http.ResponseWriter, templateName string) {
 	// create template cache
-	templateCache, err := CreateTemplateCache()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// templateCache, err := CreateTemplateCache()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	templateCache := app.TemplateCache
 	// get requested template
 	cachedTemplate, exists := templateCache[templateName]
 	if !exists {
-		log.Fatal(err)
+		log.Fatal("Could not get template cache")
 	}
 
 	buffer := new(bytes.Buffer)
-	err = cachedTemplate.Execute(buffer, nil)
+	err := cachedTemplate.Execute(buffer, nil)
 	if err != nil {
 		log.Println(err)
 	}
