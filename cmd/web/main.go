@@ -17,12 +17,26 @@ func main() {
 		log.Fatal("Cannot create template cache")
 	}
 	app.TemplateCache = templateCache
+	// app.UseCache = false
+	app.UseCache = true
 
-	handlers.NewTemplate(&app)
+	// repo := handlers.NewRepo(&app)
+	// handlers.NewRepo(&app)
+	// handlers.NewHandlers(repo)
+	handlers.SetConfig(&app)
 
-	http.HandleFunc("/", handlers.Home)
-	http.HandleFunc("/about", handlers.About)
+	http.HandleFunc("/", handlers.RepositoryPointer.Home)
+	http.HandleFunc("/about", handlers.RepositoryPointer.About)
 
 	fmt.Println(fmt.Sprintf("=======================\nStarting application on\nlocalhost%s\n=======================", PORT_NUMBER))
 	_ = http.ListenAndServe(PORT_NUMBER, nil)
 }
+
+// func NewRepo(appPointer *config.AppConfig) *Repository {
+// 	RepositoryPointer = &Repository { AppPointer: appPointer, }
+// }
+
+// func NewHandlers(repositoryPointer *Repository) {
+// 	RepositoryPointer = repositoryPointer
+// }
+

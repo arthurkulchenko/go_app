@@ -10,35 +10,47 @@ import (
 	"github.com/arthurkulchenko/go_app/pkg/config"
 )
 
-func Home(response http.ResponseWriter, request *http.Request) {
+func (m *Repository) Home(response http.ResponseWriter, request *http.Request) {
 	renderTemplate(response, "home.page.tmpl")
 }
 
-func About(response http.ResponseWriter, request *http.Request) {
+func (m *Repository) About(response http.ResponseWriter, request *http.Request) {
 	renderTemplate(response, "about.page.tmpl")
 }
 
-// var Repo *Repository
+var RepositoryPointer *Repository
+var appConfigP *config.AppConfig
 
-// type Repository struct {
-// 	App *config.AppConfig
+type Repository struct {
+	AppConfigPointer *config.AppConfig
+}
+
+// NewRepo creates a new repository
+// func NewRepo(appConfigPointer *config.AppConfig) *Repository {
+// func NewRepo(appConfigPointer *config.AppConfig) {
+// 	RepositoryPointer = &Repository { AppConfigPointer: appConfigPointer, }
+// 	// return &Repository {
+// 	// 	AppConfigPointer: appConfigPointer,
+// 	// }
 // }
 
+// New sets the repository for handlers
+// func NewHandlers(repositoryPointer *Repository) {
+// 	RepositoryPointer = repositoryPointer
+// }
 
-
-var app *config.AppConfig
-
-func NewTemplate(appPointer *config.AppConfig) {
-	app = appPointer
+func SetConfig(appConfigPointer *config.AppConfig) {
+	// RepositoryPointer = &Repository { AppConfigPointer: appConfigPointer, }
+	appConfigP = appConfigPointer
 }
 
 func renderTemplate(response http.ResponseWriter, templateName string) {
-	// create template cache
-	// templateCache, err := CreateTemplateCache()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	templateCache := app.TemplateCache
+	var templateCache map[string]*template.Template
+	if appConfigP.UseCache {
+		templateCache = appConfigP.TemplateCache
+	} else {
+		templateCache, _ = CreateTemplateCache()
+	}
 	// get requested template
 	cachedTemplate, exists := templateCache[templateName]
 	if !exists {
