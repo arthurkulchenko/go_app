@@ -8,14 +8,17 @@ import (
 	"path/filepath"
 	"bytes"
 	"github.com/arthurkulchenko/go_app/pkg/config"
+	// "github.com/arthurkulchenko/go_app/pkg/models"
 )
 
 func (m *Repository) Home(response http.ResponseWriter, request *http.Request) {
-	renderTemplate(response, "home.page.tmpl")
+	renderTemplate(response, "home.page.tmpl", &TemplateData{})
 }
 
 func (m *Repository) About(response http.ResponseWriter, request *http.Request) {
-	renderTemplate(response, "about.page.tmpl")
+	stringMap := make(map[string]string)
+	stringMap["test"] = "Hello World"
+	renderTemplate(response, "about.page.tmpl", &TemplateData { StringMap: stringMap })
 }
 
 var RepositoryPointer *Repository
@@ -25,26 +28,27 @@ type Repository struct {
 	AppConfigPointer *config.AppConfig
 }
 
-// NewRepo creates a new repository
-// func NewRepo(appConfigPointer *config.AppConfig) *Repository {
-// func NewRepo(appConfigPointer *config.AppConfig) {
-// 	RepositoryPointer = &Repository { AppConfigPointer: appConfigPointer, }
-// 	// return &Repository {
-// 	// 	AppConfigPointer: appConfigPointer,
-// 	// }
-// }
-
-// New sets the repository for handlers
-// func NewHandlers(repositoryPointer *Repository) {
-// 	RepositoryPointer = repositoryPointer
-// }
+type TemplateData struct {
+	StringMap map[string]string
+	IntMap map[string]int
+	FloatMap map[string]float64
+	Data map[string]interface{}
+	CSRFToken string
+	Flash string
+	Watrning string
+	Error string
+}
 
 func SetConfig(appConfigPointer *config.AppConfig) {
 	// RepositoryPointer = &Repository { AppConfigPointer: appConfigPointer, }
 	appConfigP = appConfigPointer
 }
 
-func renderTemplate(response http.ResponseWriter, templateName string) {
+func addDefaultData(templateDataPointer *TemplateData) *TemplateData {
+	return templateDataPointer
+}
+
+func renderTemplate(response http.ResponseWriter, templateName string, templateData *TemplateData) {
 	var templateCache map[string]*template.Template
 	if appConfigP.UseCache {
 		templateCache = appConfigP.TemplateCache
@@ -58,16 +62,13 @@ func renderTemplate(response http.ResponseWriter, templateName string) {
 	}
 
 	buffer := new(bytes.Buffer)
-	err := cachedTemplate.Execute(buffer, nil)
-	if err != nil {
-		log.Println(err)
-	}
+	templateData = addDefaultData(templateData)
+	err := cachedTemplate.Execute(buffer, templateData)
+	if err != nil { log.Println(err) }
 
 	// render the template
 	_, err = buffer.WriteTo(response)
-	if err != nil {
-		log.Println(err)
-	}
+	if err != nil { log.Println(err) }
 }
 
 func CreateTemplateCache() (map[string]*template.Template, error) {
@@ -75,52 +76,20 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 	myCache := map[string]*template.Template{}
 	// get all files with *.page.tmpl
 	pages, err := filepath.Glob("./templates/*.page.tmpl")
-	if err != nil {
-		return myCache, err
-	}
+	if err != nil { return myCache, err }
 	// range trough all files with template extention
 	for _, page := range pages {
 		name := filepath.Base(page) // returs last element from '/'
 		parsedTemplatePointer, err := template.New(name).ParseFiles(page)
-		if err != nil {
-			return myCache, err
-		}
+		if err != nil { return myCache, err }
 
 		layouts, err := filepath.Glob("./templates/*.layout.tmpl")
-		if err != nil {
-			return myCache, err
-		}
+		if err != nil { return myCache, err }
 		if len(layouts) > 0 {
 			parsedTemplatePointer, err = parsedTemplatePointer.ParseGlob("./templates/*.layout.tmpl")
-			if err != nil {
-				return myCache, err
-			}
+			if err != nil { return myCache, err }
 		}
 		myCache[name] = parsedTemplatePointer
 	}
 	return myCache, nil
 }
-
-// var templateCache = make(map[string]*template.Template)
-
-// func renderTemplate(response http.ResponseWriter, templateName string) {
-// 	var err error
-// 	templates := []string { fmt.Sprintf("./templates/%s", templateName), "./templates/base.layout.tmpl", }
-// 	// check to see if we already hae the template in the cache
-// 	_, inMap := templateCache[templateName]
-// 	if inMap {
-// 		log.Println("using cached template")
-// 	} else {
-// 		log.Println("creating template")
-// 		tmpl, err := template.ParseFiles(templates...)
-
-// 		if err != nil {
-// 			log.Println(err)
-// 		} else {
-// 			templateCache[templateName] = tmpl
-// 		}
-// 	}
-
-// 	err = templateCache[templateName].Execute(response, nil)
-// 	if err != nil { log.Println(err) }
-// }
