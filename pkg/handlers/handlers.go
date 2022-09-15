@@ -30,12 +30,15 @@ type TemplateData struct {
 }
 
 func (receiver *Repository) Home(response http.ResponseWriter, request *http.Request) {
+	// remoteIP := request.RemoteAddr
+	// receiver.AppConfigPointer.Session.Put(request.Context(), "remote_ip", remoteIP)
 	renderTemplate(response, "home.page.tmpl", &TemplateData{})
 }
 
 func (receiver *Repository) About(response http.ResponseWriter, request *http.Request) {
 	stringMap := make(map[string]string)
-	stringMap["test"] = "Hello World"
+	// stringMap["cookie"] = receiver.AppConfigPointer.Session.GetString(request.Context(), "remote_ip")
+	stringMap["cookie"] = request.RemoteAddr
 	renderTemplate(response, "about.page.tmpl", &TemplateData { StringMap: stringMap })
 }
 
