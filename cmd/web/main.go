@@ -13,30 +13,15 @@ const PORT_NUMBER = ":8080"
 func main() {
 	var app config.AppConfig
 	templateCache, err := handlers.CreateTemplateCache()
-	if err != nil {
-		log.Fatal("Cannot create template cache")
-	}
+	if err != nil { log.Fatal("Cannot create template cache") }
+
 	app.TemplateCache = templateCache
-	// app.UseCache = false
+	app.PortNumber = PORT_NUMBER
 	app.UseCache = false
 
-	// repo := handlers.NewRepo(&app)
-	// handlers.NewRepo(&app)
-	// handlers.NewHandlers(repo)
 	handlers.SetConfig(&app)
-
-	http.HandleFunc("/", handlers.RepositoryPointer.Home)
-	http.HandleFunc("/about", handlers.RepositoryPointer.About)
-
-	fmt.Println(fmt.Sprintf("=======================\nStarting application on\nlocalhost%s\n=======================", PORT_NUMBER))
-	_ = http.ListenAndServe(PORT_NUMBER, nil)
+	fmt.Println(fmt.Sprintf("=======================\nStarting application on\nlocalhost%s\n=======================", app.PortNumber))
+	server := &http.Server { Addr: app.PortNumber, Handler: Routes(&app) }
+	err = server.ListenAndServe()
+	log.Fatal(err)
 }
-
-// func NewRepo(appPointer *config.AppConfig) *Repository {
-// 	RepositoryPointer = &Repository { AppPointer: appPointer, }
-// }
-
-// func NewHandlers(repositoryPointer *Repository) {
-// 	RepositoryPointer = repositoryPointer
-// }
-
