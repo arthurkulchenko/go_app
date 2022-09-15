@@ -4,15 +4,24 @@ import (
 	"fmt"
 	"net/http"
 	"github.com/arthurkulchenko/go_app/pkg/handlers"
-	// "html/template"
+	"github.com/arthurkulchenko/go_app/pkg/config"
+	"log"
 )
 
 const PORT_NUMBER = ":8080"
 
 func main() {
-	http.HandleFunc("/", handlers.Home)
-	http.HandleFunc("/about", handlers.About)
+	var app config.AppConfig
+	templateCache, err := handlers.CreateTemplateCache()
+	if err != nil { log.Fatal("Cannot create template cache") }
 
-	fmt.Println(fmt.Sprintf("=======================\nStarting application on\nlocalhost%s\n=======================", PORT_NUMBER))
-	_ = http.ListenAndServe(PORT_NUMBER, nil)
+	app.TemplateCache = templateCache
+	app.PortNumber = PORT_NUMBER
+	app.UseCache = false
+
+	handlers.SetConfig(&app)
+	fmt.Println(fmt.Sprintf("=======================\nStarting application on\nlocalhost%s\n=======================", app.PortNumber))
+	server := &http.Server { Addr: app.PortNumber, Handler: Routes(&app) }
+	err = server.ListenAndServe()
+	log.Fatal(err)
 }
