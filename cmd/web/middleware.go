@@ -15,12 +15,7 @@ import(
 
 func NoSurf(next http.Handler) http.Handler {
 	csrfHandler := nosurf.New(next)
-	csrfHandler.SetBaseCookie(http.Cookie {
-		HttpOnly: true,
-		Path: "/",
-		Secure: app.Env == "production",
-		SameSite: http.SameSiteLaxMode,
-	})
+	csrfHandler.SetBaseCookie(http.Cookie { HttpOnly: true, Path: "/", Secure: app.Env == "production", SameSite: http.SameSiteLaxMode, })
 	return csrfHandler
 }
 

@@ -13,9 +13,23 @@ import (
 
 var appConfigP *config.AppConfig
 var RepositoryPointer *Repository
+// RepositoryPointer.AppConfigPointer => *config.AppConfig
 
 type Repository struct {
 	AppConfigPointer *config.AppConfig
+}
+
+func SetConfigAndRepository(appConfigPointer *config.AppConfig) {
+	appConfigP = appConfigPointer
+	RepositoryPointer = &Repository { AppConfigPointer: appConfigPointer }
+}
+
+func NewRepo(pointer *config.AppConfig) *Repository {
+	return &Repository { AppConfigPointer: pointer }
+}
+
+func NewHandlers(repositoryPointer *Repository) {
+	RepositoryPointer = repositoryPointer
 }
 
 type TemplateData struct {
@@ -30,20 +44,20 @@ type TemplateData struct {
 }
 
 func (receiver *Repository) Home(response http.ResponseWriter, request *http.Request) {
-	// remoteIP := request.RemoteAddr
-	// receiver.AppConfigPointer.Session.Put(request.Context(), "remote_ip", remoteIP)
-	renderTemplate(response, "home.page.tmpl", &TemplateData{})
+	stringMap := make(map[string]string)
+	session := receiver.AppConfigPointer.Session
+	stringMap["remoteaddr"] = request.RemoteAddr
+	session.Put(request.Context(), "remoteaddr", request.RemoteAddr)
+
+	renderTemplate(response, "home.page.tmpl", &TemplateData { StringMap: stringMap })
 }
 
 func (receiver *Repository) About(response http.ResponseWriter, request *http.Request) {
 	stringMap := make(map[string]string)
-	// stringMap["cookie"] = receiver.AppConfigPointer.Session.GetString(request.Context(), "remote_ip")
-	stringMap["cookie"] = request.RemoteAddr
-	renderTemplate(response, "about.page.tmpl", &TemplateData { StringMap: stringMap })
-}
+	session := receiver.AppConfigPointer.Session
+	stringMap["remoteaddr"] = session.GetString(request.Context(), "remoteaddr")
 
-func SetConfig(appConfigPointer *config.AppConfig) {
-	appConfigP = appConfigPointer
+	renderTemplate(response, "about.page.tmpl", &TemplateData { StringMap: stringMap })
 }
 
 func addDefaultData(templateDataPointer *TemplateData) *TemplateData {
