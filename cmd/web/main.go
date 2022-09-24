@@ -2,16 +2,27 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-	"github.com/arthurkulchenko/go_app/pkg/handlers"
+	"github.com/alexedwards/scs/v2"
 	"github.com/arthurkulchenko/go_app/pkg/config"
+	"github.com/arthurkulchenko/go_app/pkg/handlers"
 	"log"
+	"net/http"
+	"time"
 )
 
 const PORT_NUMBER = ":8080"
+var app config.AppConfig
+var session *scs.SessionManager
 
 func main() {
-	var app config.AppConfig
+	app.Env = "development"
+	session = scs.New()
+	session.Lifetime = 24 * time.Hour
+	session.Cookie.Persist = true
+	session.Cookie.SameSite = http.SameSiteLaxMode
+	session.Cookie.Secure = app.Env == "production"
+	app.Session = session
+
 	templateCache, err := handlers.CreateTemplateCache()
 	if err != nil { log.Fatal("Cannot create template cache") }
 
@@ -19,7 +30,11 @@ func main() {
 	app.PortNumber = PORT_NUMBER
 	app.UseCache = false
 
-	handlers.SetConfig(&app)
+	handlers.SetConfigAndRepository(&app)
+
+	// handlersRepo := handlers.NewRepo(&app)
+	// handlers.NewHandlers(handlersRepo)
+
 	fmt.Println(fmt.Sprintf("=======================\nStarting application on\nlocalhost%s\n=======================", app.PortNumber))
 	server := &http.Server { Addr: app.PortNumber, Handler: Routes(&app) }
 	err = server.ListenAndServe()
